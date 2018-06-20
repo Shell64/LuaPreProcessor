@@ -36,7 +36,7 @@ print(4)
 print(5)
 ```
 
-This preprocessor supports string and comments blocks, except for the $(code) syntax, it will work anywhere and you must prepare your strings for this as well (or it might be replaced). @line codes works with comments and string blocks, it won't run as code if it's inside a string or comment block.
+This preprocessor supports string and comments blocks, except for the $(code) syntax, it will work anywhere and you must prepare your strings for this as well (or it might be replaced). @line codes will be ignored in comments and string blocks.
 
 There's a built in function for including files, use it
 
