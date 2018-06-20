@@ -1,4 +1,4 @@
-# Lua code preprocessor for LÖVE Framework
+# Lua preprocessor for LÖVE Framework
 
 It's mainly made to be used with löve framework, but if you provide your own filesystem operation functions it can work with any Lua platform.
 
