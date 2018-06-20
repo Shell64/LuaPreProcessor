@@ -40,6 +40,7 @@ local Type = type
 local Global = _G
 local Pairs = pairs
 local SetFunctionEnvironment = setfenv
+local ToString = ToString
 
 local CurrentEnvironment = Global
 
@@ -228,8 +229,12 @@ local function include(Path)
 			Error("Could not load include (" .. Path .. "). Error: " .. Err)
 		end
 	else
-		Error("Could not include (" .. Path .. ")")
+		Error("Could not include (" .. Path .. ") Error: " .. ToString(Err))
 	end
+end
+
+function PreProcessor.ReplaceFileSystemReadFunction(ReadFunction)
+	FileSystem_Read = ReadFunction
 end
 
 function PreProcessor.PrepareEnvironment(Tab)
