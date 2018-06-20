@@ -144,16 +144,6 @@ local function include(Path)
 			end
 		end
 		
-		do
-			local StringOut = ""
-			
-			for I = 1, #Blocks do
-				StringOut = StringOut .. "Block type : " .. Blocks[I][1] .. " Start: " .. Blocks[I][2] .. " End: " ..Blocks[I][3] .. "\n" .. String_Substring(Data, Blocks[I][2], Blocks[I][3]) .. "\n"
-			end
-			
-			love.filesystem.write("blocks.lua", StringOut)
-		end
-		
 		local LocalDefined = false
 		local Chunk = {}
 		
