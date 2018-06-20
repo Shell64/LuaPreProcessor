@@ -18,7 +18,7 @@ else
 end
 ```
 
-The code is based in SimplePreProcessor so it does share similar syntax when in use such as:
+The code is based in SimpleLuaPreprocessor so it does share similar syntax when in use such as:
 
 ```lua
 @for i = 1, 5 do
