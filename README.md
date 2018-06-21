@@ -1,10 +1,13 @@
 # Lua preprocessor for LÖVE Framework
 
-It's mainly made to be used with löve framework, but if you provide your own filesystem operation functions it can work with any Lua platform.
+It's mainly made to be used with löve framework, but if you supply your own filesystem operation functions it can work with any Lua platform.
 
 Quick Implementation
 ===========
 ```lua
+--Supply filesystem.read. Might return DataStringOrNil, ErrorString  to work
+PreProcessor.ReplaceFileSystemReadFunction(love.filesystem.read)
+
 local PreProcessor = require("PreProcessor")
 PreProcessor.PrepareEnvironment(_G)
 
@@ -47,6 +50,8 @@ $(include("path.lua"))
 Library Functions
 ===========
 ```lua
+--Supply your own filesystem.read function that returns DataStringOrNil, ErrorString to work on different platforms:
+PreProcessor.ReplaceFileSystemReadFunction(Func)
 --Use the following function to copy useful functions like include to your preprocessing environment:
 PreProcessor.PrepareEnvironment(EnvironmentTable or _G)
 
