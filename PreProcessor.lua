@@ -220,7 +220,7 @@ local function include(Path)
 		
 		local ConcatenatedChunk = Table_Concatenate(Chunk)
 		
-		local Func, Err = LoadString(ConcatenatedChunk)
+		local Func, Err = LoadString(ConcatenatedChunk, Path)
 		
 		if Func then
 			SetFunctionEnvironment(Func, CurrentEnvironment)
