@@ -28,7 +28,7 @@ For more information, please refer to <http://unlicense.org/>
 local PreProcessor = {}
 
 local Error = error
-local FileSystem_Read = love.filesystem.read
+local FileSystem_Read
 local LoadString = loadstring
 local Table_Concatenate = table.concat
 local String_Byte = string.byte
@@ -146,7 +146,7 @@ local function include(Path)
 		end
 		
 		local LocalDefined = false
-		local Chunk = {}
+		local Chunk = {"local Output = \"\" "}
 		
 		local LineStart = 1
 		local LineEnd = String_Find(Data, "\n", nil, true)
@@ -174,34 +174,46 @@ local function include(Path)
 			if CodeBegin then
 				Chunk[#Chunk + 1] = String_Substring(Line, CodeEnd + 1) .. "\n"
 			else
-				local LastIndex = 1
+				local LastCodeEnd = 0
+				local CodeBegin, CodeEnd = String_Find(Line, "%$(%b())()")
 				
-				for Text, Expression, Index in String_GMatch(Line, "(.-)%$(%b())()") do
-					LastIndex = Index
+				while CodeBegin do
+					local TempCodeBegin = LineStart + CodeBegin
 					
-					if Text ~= "" then
-						if not LocalDefined then
-							Chunk[#Chunk + 1] = String_Format('local Output = "%s"\n', ToByteString(Text))
-							LocalDefined = true
-						else
-							Chunk[#Chunk + 1] = String_Format('Output = Output .. "%s"\n', ToByteString(Text))
+					for I = 1, #Blocks do
+						if TempCodeBegin >= Blocks[I][2] and TempCodeBegin <= Blocks[I][3] then
+							CodeBegin = nil
+							break
 						end
 					end
 					
-					if not LocalDefined then
-						Chunk[#Chunk + 1] = String_Format('local Output = %s\n', Expression)
-						LocalDefined = true
-					else
-						Chunk[#Chunk + 1] = String_Format('Output = Output .. %s\n', Expression)
+					if CodeBegin then
+						local NewCodeBegin = String_Find(String_Substring(Line, CodeBegin + 1, CodeEnd), "$", nil, true)
+						
+						if NewCodeBegin then
+							CodeBegin = CodeBegin + NewCodeBegin
+						end
+						
+						local BeforeString = String_Substring(Line, LastCodeEnd + 1, CodeBegin - 1)
+						local AfterString = String_Substring(Line, CodeBegin + 1, CodeEnd)
+						
+						if BeforeString ~= "" then
+							Chunk[#Chunk + 1] = String_Format("Output = Output .. \"%s\"", ToByteString(BeforeString))
+						end
+						
+						Chunk[#Chunk + 1] = String_Format(" Output = Output ..  %s ", AfterString)
+						
+						LastCodeEnd = CodeEnd
 					end
+					
+					CodeBegin, CodeEnd = String_Find(Line, "(.-)%$(%b())()", CodeEnd + 1)
 				end
 				
-				if not LocalDefined then
-					Chunk[#Chunk + 1] = String_Format('local Output = "%s"\n', ToByteString(String_Substring(Line, LastIndex).."\n"))
-					LocalDefined = true
-				else
-					Chunk[#Chunk + 1] = String_Format('Output = Output .. "%s"\n', ToByteString(String_Substring(Line, LastIndex).."\n"))
+				if LastCodeEnd < #Line then
+					Chunk[#Chunk + 1] = String_Format("Output = Output .. \"%s\"", ToByteString(String_Substring(Line, LastCodeEnd + 1)))
 				end
+				
+				Chunk[#Chunk + 1] = " Output = Output .. \"\\n\"\n"
 			end
 			
 			if LineEnd == #Data + 1 then
@@ -209,7 +221,7 @@ local function include(Path)
 			end
 			
 			LineStart = LineEnd + 1
-			LineEnd = String_Find(Data, "\n", LineEnd + 2, true)
+			LineEnd = String_Find(Data, "\n", LineEnd + 1, true)
 			
 			if not LineEnd then
 				LineEnd = #Data + 1
@@ -219,7 +231,6 @@ local function include(Path)
 		Chunk[#Chunk + 1] = "return Output\n"
 		
 		local ConcatenatedChunk = Table_Concatenate(Chunk)
-		
 		local Func, Err = LoadString(ConcatenatedChunk, Path)
 		
 		if Func then
