@@ -40,7 +40,7 @@ local Type = type
 local Global = _G
 local Pairs = pairs
 local SetFunctionEnvironment = setfenv
-local ToString = ToString
+local ToString = tostring
 
 local CurrentEnvironment = Global
 
@@ -83,8 +83,7 @@ local function include(Path)
 						if Count % 2 == 1 then
 							BlockEnd = String_Find(Data, Char, BlockEnd + 1, true)
 						else
-							BlockEnd = nil
-							break
+							BlockEnd = String_Find(Data, Char, I + 1, true) + 1
 						end
 					end
 					
@@ -105,14 +104,14 @@ local function include(Path)
 							local Char2 = String_Substring(Data, Next, Next)
 							
 							if not Char2 then
-								Blocks[#Blocks + 1] = {1, I, #Data}
+								Blocks[#Blocks + 1] = {2, I, #Data}
 								I = #Data
 							elseif Char2 == "=" then
 								Equals = Equals .. "="
 							elseif Char2 == "[" then
 								break
 							else
-								Blocks[#Blocks + 1] = {1, I, #Data}
+								Blocks[#Blocks + 1] = {2, I, #Data}
 								I = #Data
 							end
 							
@@ -122,20 +121,20 @@ local function include(Path)
 						local _, BlockEnd = String_Find(Data, "]" .. Equals .. "]", Next, true)
 						
 						if not BlockEnd then
-							Blocks[#Blocks + 1] = {1, I, #Data}
+							Blocks[#Blocks + 1] = {2, I, #Data}
 							I = #Data
 						else
-							Blocks[#Blocks + 1] = {1, I, BlockEnd}
+							Blocks[#Blocks + 1] = {2, I, BlockEnd}
 							I = BlockEnd
 						end
 					else
 						local BlockEnd = String_Find(Data, "\n", I + 2, true)
 							
 						if BlockEnd then
-							Blocks[#Blocks + 1] = {1, I, BlockEnd}
+							Blocks[#Blocks + 1] = {2, I, BlockEnd}
 							I = BlockEnd
 						else
-							Blocks[#Blocks + 1] = {1, I, #Data}
+							Blocks[#Blocks + 1] = {2, I, #Data}
 							I = #Data
 						end
 					end
@@ -181,7 +180,7 @@ local function include(Path)
 					local TempCodeBegin = LineStart + CodeBegin
 					
 					for I = 1, #Blocks do
-						if TempCodeBegin >= Blocks[I][2] and TempCodeBegin <= Blocks[I][3] then
+						if Blocks[I][1] == 2 and TempCodeBegin >= Blocks[I][2] and TempCodeBegin <= Blocks[I][3] then
 							CodeBegin = nil
 							break
 						end
@@ -206,7 +205,7 @@ local function include(Path)
 						LastCodeEnd = CodeEnd
 					end
 					
-					CodeBegin, CodeEnd = String_Find(Line, "(.-)%$(%b())()", CodeEnd + 1)
+					CodeBegin, CodeEnd = String_Find(Line, "%$(%b())()", CodeEnd + 1)
 				end
 				
 				if LastCodeEnd < #Line then
