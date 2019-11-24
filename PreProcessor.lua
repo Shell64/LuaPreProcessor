@@ -100,7 +100,7 @@ local function include(Path)
 						
 						local Equals = ""
 						local Found = false
-						while not Found do
+						while true do
 							local Char2 = String_Substring(Data, Next, Next)
 							
 							if not Char2 then
@@ -109,23 +109,34 @@ local function include(Path)
 							elseif Char2 == "=" then
 								Equals = Equals .. "="
 							elseif Char2 == "[" then
+								Found = true
 								break
 							else
-								Blocks[#Blocks + 1] = {2, I, #Data}
-								I = #Data
+								local BlockEnd = String_Find(Data, "\n", I + 2, true)
+								
+								if BlockEnd then
+									Blocks[#Blocks + 1] = {2, I, BlockEnd}
+									I = BlockEnd
+								else
+									Blocks[#Blocks + 1] = {2, I, #Data}
+									I = #Data
+								end
+								break
 							end
 							
 							Next = Next + 1
 						end
 						
-						local _, BlockEnd = String_Find(Data, "]" .. Equals .. "]", Next, true)
-						
-						if not BlockEnd then
-							Blocks[#Blocks + 1] = {2, I, #Data}
-							I = #Data
-						else
-							Blocks[#Blocks + 1] = {2, I, BlockEnd}
-							I = BlockEnd
+						if Found then
+							local _, BlockEnd = String_Find(Data, "]" .. Equals .. "]", Next, true)
+							
+							if not BlockEnd then
+								Blocks[#Blocks + 1] = {2, I, #Data}
+								I = #Data
+							else
+								Blocks[#Blocks + 1] = {2, I, BlockEnd}
+								I = BlockEnd
+							end
 						end
 					else
 						local BlockEnd = String_Find(Data, "\n", I + 2, true)
@@ -144,7 +155,6 @@ local function include(Path)
 			end
 		end
 		
-		local LocalDefined = false
 		local Chunk = {"local Output = \"\" "}
 		
 		local LineStart = 1
