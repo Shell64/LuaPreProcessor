@@ -44,14 +44,15 @@ local ToString = tostring
 
 local CurrentEnvironment = Global
 
-local function ToByteString(Str)
-	local NewStr = ""
+local ToByteString = function(Str)
+	local NewStr = {}
 	
 	for I = 1, #Str do
-		NewStr = NewStr .. "\\" .. String_Byte(String_Substring(Str, I, I))
+		NewStr[#NewStr + 1] = "\\"
+		NewStr[#NewStr + 1] = String_Byte(String_Substring(Str, I, I))
 	end
 	
-	return NewStr
+	return Table_Concatenate(NewStr)
 end
 
 local function include(Path)
